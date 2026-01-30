@@ -1,16 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { generateFizzBuzz, updateRequest } from "./fizzBuzzSlice";
+import { fetchMostFrequentRequest } from "../statistics/statisticsSlice";
 
 const FizzBuzzForm: React.FC = () => {
   const dispatch = useAppDispatch();
   const { request, loading, error, response } = useAppSelector(
     (state) => state.fizzBuzz,
   );
+  const hasFetched = useRef(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(generateFizzBuzz(request));
+    try {
+      await dispatch(generateFizzBuzz(request)).unwrap();
+      dispatch(fetchMostFrequentRequest());
+    } catch (err) {
+      // optional: handle error
+      console.error("Generate failed:", err);
+    }
   };
 
   const handleChange = (
@@ -21,8 +29,18 @@ const FizzBuzzForm: React.FC = () => {
   };
 
   useEffect(() => {
-    // Load initial data
-    dispatch(generateFizzBuzz(request));
+    // Load initial data (run once)
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    (async () => {
+      try {
+        await dispatch(generateFizzBuzz(request)).unwrap();
+        dispatch(fetchMostFrequentRequest());
+      } catch (err) {
+        console.error("Initial generate failed:", err);
+      }
+    })();
   }, []);
 
   return (

@@ -6,6 +6,9 @@ const StatisticsPanel: React.FC = () => {
   const dispatch = useAppDispatch();
   const { data, loading, error } = useAppSelector((state) => state.statistics);
 
+  //   useEffect(() => {
+  //     dispatch(fetchMostFrequentRequest());
+  //   }, [dispatch]);
   useEffect(() => {
     dispatch(fetchMostFrequentRequest());
   }, [dispatch]);
